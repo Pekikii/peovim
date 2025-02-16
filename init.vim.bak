@@ -1,0 +1,188 @@
+" general settings
+
+set nocompatible
+filetype on
+set encoding=utf-8
+
+filetype plugin on
+filetype indent on
+
+" set viminfo+=n~/.cache/vim/viminfo
+
+call plug#begin('~/.vim/plugged')
+
+
+Plug 'rust-lang/rust.vim'
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'dense-analysis/ale'
+Plug 'tpope/vim-surround'
+Plug 'tpope/vim-commentary'
+Plug 'autozimu/LanguageClient-neovim', {'branch': 'next', 'do': 'bash install.sh'}
+
+call plug#end()
+
+
+let g:rustfmt_autosave = 1
+let g:rustfmt_emit_files = 1
+let g:rustfmt_fail_silently = 0
+
+" Use tab for trigger completion with characters ahead and navigate
+" NOTE: There's always complete item selected by default, you may want to enable
+" no select by `"suggest.noselect": true` in your configuration file
+" NOTE: Use command ':verbose imap <tab>' to make sure tab is not mapped by
+" other plugin before putting this into your config
+inoremap <silent><expr> <TAB>
+      \ coc#pum#visible() ? coc#pum#next(1) :
+      \ CheckBackspace() ? "\<Tab>" :
+      \ coc#refresh()
+inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
+
+function! CheckBackspace() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+
+if has('nvim')
+  inoremap <silent><expr> <c-space> coc#refresh()
+else
+  inoremap <silent><expr> <c-@> coc#refresh()
+endif
+
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
+
+
+syntax on " highlight syntax
+set number " show line numbers
+set noswapfile " disable the swapfile
+
+" show existing tab with 4 spaces width
+set tabstop=4
+" when indenting with '>', use 4 spaces width
+set shiftwidth=4
+" On pressing tab, insert 4 spaces
+set expandtab
+inoremap <S-Tab> <C-V><Tab>
+
+set ignorecase " ignore case in search
+set incsearch " show search results as you type
+set hlsearch " highlight all results
+
+" use system clipboard
+set clipboard=unnamedplus
+
+" enable auto completion menu after pressing TAB.
+set wildmenu
+
+" make wildmenu behave like similar to Bash completion.
+set wildmode=list:longest
+
+" there are certain files that we would never want to edit with Vim.
+" wildmenu will ignore files with these extensions.
+set wildignore=*.docx,*.jpg,*.png,*.gif,*.pdf,*.pyc,*.exe,*.flv,*.img,*.xlsx
+
+" disable bell
+set noerrorbells visualbell t_vb=
+if has('autocmd')
+      autocmd GUIEnter * set visualbell t_vb=
+endif
+
+
+" design
+
+colorscheme ir_black
+
+" change highlighting of cursor line when entering/leaving Insert Mode
+set cursorline
+highlight CursorLine cterm=NONE ctermfg=NONE ctermbg=233 guifg=NONE guibg=#121212
+autocmd InsertEnter * highlight CursorLine cterm=NONE ctermfg=NONE ctermbg=234 guifg=NONE guibg=#1c1c1c
+autocmd InsertLeave * highlight CursorLine cterm=NONE ctermfg=NONE ctermbg=233 guifg=NONE guibg=#121212
+
+
+" keybindings
+
+let mapleader = "'"
+
+nnoremap <S-Q> <Nop>
+
+nnoremap <C-H> <C-W>h
+nnoremap <C-J> <C-W>j
+nnoremap <C-K> <C-W>k
+nnoremap <C-L> <C-W>l
+
+" cesize split windows using arrow keys by pressing:
+" CTRL+UP, CTRL+DOWN, CTRL+LEFT, or CTRL+RIGHT.
+noremap <c-up> <c-w>+
+noremap <c-down> <c-w>-
+noremap <c-left> <c-w>>
+noremap <c-right> <c-w><
+
+" press Ctrl + z to get rid of highlights
+nnoremap <C-z> :let @/=""<CR>
+
+" yank from cursor to the end of line.
+nnoremap Y y$
+
+" pressing the letter o will open a new line below the current one.
+" exit insert mode after creating a new line above or below the current line.
+nnoremap <C-o> o<esc>
+
+" press Ctrl + r to replace selected text in whole file:
+vnoremap <C-r> "hy:%s/<C-r>h//gc<left><left><left>
+
+" augroup AutoSaveFoldView
+"   autocmd!
+"   autocmd BufWinEnter * silent loadview
+"   autocmd BufWinLeave * mkview
+" augroup END
+
+" Mapping for closing a fold and saving the view
+nnoremap zf :normal! zf<CR>:mkview<CR>
+
+" Mapping for opening a fold and saving the view
+nnoremap zo :normal! zo<CR>:mkview<CR>
+
+" Unbind Page Down and Page Up
+noremap <PageDown> <NOP>
+noremap <PageUp> <NOP>
+
+" Keep cursor in the center after Ctrl-D and Ctrl-U
+noremap <C-D> <C-D>zz
+noremap <C-U> <C-U>zz
+
+
+set hidden
+
+
+nnoremap <F5> :call LanguageClient_contextMenu()<CR>
+" Or map each action separately
+nnoremap <silent> K :call LanguageClient#textDocument_hover()<CR>
+nnoremap <silent> gd :call LanguageClient#textDocument_definition()<CR>
+nnoremap <silent> <F2> :call LanguageClient#textDocument_rename()<CR>
+
+let g:ale_sign_error                  = '✘'
+let g:ale_sign_warning                = '⚠'
+highlight ALEErrorSign ctermbg        =NONE ctermfg=red
+highlight ALEWarningSign ctermbg      =NONE ctermfg=yellow
+let g:ale_linters_explicit            = 1
+let g:ale_lint_on_text_changed        = 'never'
+let g:ale_lint_on_enter               = 0
+let g:ale_lint_on_save                = 1
+let g:ale_fix_on_save                 = 1
+
+let g:ale_linters = {
+\   'ocaml':      ['merlin'],
+\}
+
+let g:ale_fixers = {
+\   'ocaml':      ['ocamlformat'],
+\   '*':          ['remove_trailing_lines', 'trim_whitespace'],
+\}
+
+nnoremap <Leader>m :!make<CR>
+
+
+nnoremap n nzz
+nnoremap N Nzz
