@@ -1,0 +1,4 @@
+
+plugin/
+init.vim.bak
+packer.nvim.log
